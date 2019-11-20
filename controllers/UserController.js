@@ -3,39 +3,39 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const env = require('../env')
 
-const RegisterUser = async function(req, res) {
-    try {
-        req.body.password = await bcrypt.hash(req.body.password, 10);
-        const user = await UserModel.create({
-          ...req.body,
-        });
-        const token = jwt.sign({
-          id: user._id
-        }, env.JWT_SECRET, {
-          expiresIn: '1h'
-        });
-        const result = user.toJSON();
-        delete result['password'];
-        res.status(200).json({
-          status: 'success',
-          data: {
-            result: result,
-            token
-          }
-        });
-      } catch (err) {
-        if (err.code === 11000) {
-          res.status(400).json({
-            status: 'error',
-            message: 'this email already exist'
-          })
-        } else {
-          res.status(500).json({
-            status: 'error',
-            message: err,
-          });
-        }
+const RegisterUser = async function (req, res) {
+  try {
+    req.body.password = await bcrypt.hash(req.body.password, 10);
+    const user = await UserModel.create({
+      ...req.body,
+    });
+    const token = jwt.sign({
+      id: user._id
+    }, env.JWT_SECRET, {
+      expiresIn: '1h'
+    });
+    const result = user.toJSON();
+    delete result['password'];
+    res.status(200).json({
+      status: 'success',
+      data: {
+        result: result,
+        token
       }
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      res.status(400).json({
+        status: 'error',
+        message: 'this email already exist'
+      })
+    } else {
+      res.status(500).json({
+        status: 'error',
+        message: err,
+      });
+    }
+  }
 }
 
 const LoginUser = async function (req, res) {
@@ -94,8 +94,25 @@ const UserProfile = async function (req, res) {
     })
   }
 }
+
+// Get all Users
+const AllUsers = async function (req, res) {
+  try {
+    const search = req.query.email ? { email: req.query.email } : {};
+    const users = await UserModel.find(search);
+    res.status(200).json({ status: 'succcess', data: users });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      status: 'error', message: "An error occured while getting user's",
+    });
+  }
+
+
+}
 module.exports = {
-    RegisterUser,
-    LoginUser,
-    UserProfile
+  RegisterUser,
+  LoginUser,
+  UserProfile,
+  AllUsers,
 }
